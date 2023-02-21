@@ -1,1 +1,2 @@
 beautifulsoup4==4.11.2
+streamlit-awesome-table==0.1.0
