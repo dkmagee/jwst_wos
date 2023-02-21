@@ -84,6 +84,7 @@ AwesomeTable(
             name="SCHEDULED_START_TIME",
             label="Scheduled Start Time",
             dtype=ColumnDType.DATETIME,
+            dateformat="%Y-%m-%d-%H:%M:%S",
         ),
         Column(name="DURATION", label="Duration"),
         Column(name="SCIENCE_INSTRUMENT_AND_MODE", label="Science Instrument and Mode"),
