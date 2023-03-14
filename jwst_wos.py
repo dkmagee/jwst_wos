@@ -8,6 +8,7 @@ import pandas as pd
 import streamlit as st
 from awesome_table import AwesomeTable
 from awesome_table.column import Column, ColumnDType
+import arrow
 
 
 # STScI main URL
@@ -47,29 +48,34 @@ for rlnk in report_links[:LOOKBACK]:
     for wt in wos_txt[4:]:
         wtl = [wt[i:j].strip() for i, j in zip(idx[:-1], idx[1:])]
         wos_data.append(dict(zip(col_titles, wtl)))
-
 # clean up the schedule columns
 # convert SCHEDULED_START_TIME to datetime object
 prev_sst = ""
 prev_vid = ""
+now = arrow.utcnow()
+prev_dt = ""
 for i, wd in enumerate(wos_data):
     if wd["VISIT_ID"] == "":
         wd["VISIT_ID"] = prev_vid
     prev_vid = wd["VISIT_ID"]
 
     sst = wd["SCHEDULED_START_TIME"]
-    if sst == "^ATTACHED TO PRIME^":
+    if sst == "^ATTACHED TO PRIME^" or sst == "":
         sst = prev_sst
-    if sst == "":
         sst = prev_sst
+        dtt = prev_dt
     wd["SCHEDULED_START_TIME"] = dt.datetime.strptime(sst, "%Y-%m-%dT%H:%M:%SZ")
+    att = arrow.get(sst, "YYYY-MM-DDTHH:mm:ssZ")
+    dtt = att.humanize(now, granularity=["day", "hour"])
+    wd["DELTA_TIME"] = dtt
     prev_sst = sst
+    prev_dt = dtt
 
     if wd["DURATION"]:
         wd["DURATION"] = wd["DURATION"].split("/")[1]
 
-st.set_page_config(page_title="JWST Weekly Schedule", layout="wide")
-st.title("JWST Weekly Schedules")
+st.set_page_config(page_title="JWST Weekly Observint Schedules", layout="wide")
+st.title("JWST Weekly Observing Schedules")
 
 st.session_state["order_column"] = "SCHEDULED_START_TIME"
 st.session_state["order_ascending"] = "Descending"
@@ -82,10 +88,11 @@ AwesomeTable(
         Column(name="VISIT_TYPE", label="Visit Type"),
         Column(
             name="SCHEDULED_START_TIME",
-            label="Scheduled Start Time",
+            label="Scheduled Start Time (UTC)",
             dtype=ColumnDType.DATETIME,
             dateformat="%Y-%m-%d-%H:%M:%S",
         ),
+        Column(name="DELTA_TIME", label="Time until Observation"),
         Column(name="DURATION", label="Duration"),
         Column(name="SCIENCE_INSTRUMENT_AND_MODE", label="Science Instrument and Mode"),
         Column(name="TARGET_NAME", label="Target Name"),
