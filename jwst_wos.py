@@ -25,13 +25,13 @@ data = bs4.BeautifulSoup(response.text, "html.parser")
 # get the JWST weekly observing report links
 report_links = []
 
-for l in data.find_all("a"):
+for link in data.find_all("a"):
     if (
-        "_report_" in l["href"]
-        and l["href"].split("/")[-1].startswith(str(dt.datetime.now().year))
-        and l["href"].split("/")[-1].endswith(".txt")
+        "_report_" in link["href"]
+        and link["href"].split("/")[-1].startswith(str(dt.datetime.now().year))
+        and link["href"].split("/")[-1].endswith(".txt")
     ):
-        report_links.append(f'{STSCI_URL}{l["href"]}')
+        report_links.append(f'{STSCI_URL}{link["href"]}')
 
 
 # parse the JWST weekly observing schedule text files
